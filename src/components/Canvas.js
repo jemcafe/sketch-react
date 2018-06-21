@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Brush from './Brush';
 
 class Canvas extends Component {
    
@@ -12,11 +13,31 @@ class Canvas extends Component {
       focus, 
       engage, 
       putPoint,
-      disengage 
+      disengage,
+      mouse,
+      mousePosition
     } = this.props;
+
+    // canvas size
+    const width = 400;
+    const height = 400;
+
+    // styles
+    const styles = {
+      canvasOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: width, 
+        height: height,
+        background: 'rgba(255,180,180,0.3)'
+      }
+    }
 
     return (
       <div className="canvas">
+
+        <Brush mouse={mouse} radius={10} />
 
         { focus && 
         <div className="focus-overlay"
@@ -25,7 +46,12 @@ class Canvas extends Component {
           onMouseLeave={() => disengage(this.refs.canvas)}>
         </div> }
 
-        <canvas ref="canvas" onMouseDown={(e) => engage(this.refs.canvas, e)}/>
+        <div className="canvas-overlay" style={ styles.canvasOverlay }
+          onMouseDown={(e) => engage(this.refs.canvas, e)}
+          onMouseMove={(e) => mousePosition(this.refs.canvas, e)}>
+        </div>
+
+        <canvas ref="canvas" width={ width } height={ height }/>
 
       </div>
     );
@@ -37,7 +63,9 @@ Canvas.propTypes = {
   initCanvas: PropTypes.func.isRequired,
   engage: PropTypes.func.isRequired,
   putPoint: PropTypes.func.isRequired,
-  disengage: PropTypes.func.isRequired
+  disengage: PropTypes.func.isRequired,
+  mouse: PropTypes.object.isRequired,
+  mousePosition: PropTypes.func.isRequired
 };
 
 export default Canvas;

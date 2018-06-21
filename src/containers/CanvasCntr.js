@@ -5,8 +5,12 @@ class CanvasCntr extends Component {
   constructor () {
     super();
     this.state = {
+      mouse: {
+        x: 0,
+        y: 0
+      },
       brush: {
-        radius: 4,
+        radius: 10,
         color: '#000000',
         selected: true
       },
@@ -21,10 +25,6 @@ class CanvasCntr extends Component {
   }
 
   initCanvas = (canvas) => {
-    // Canvas size
-    canvas.width = 400;
-    canvas.height = 400;
-
     // Context of the canvas
     const context = canvas.getContext('2d');
 
@@ -34,7 +34,6 @@ class CanvasCntr extends Component {
   }
 
   engage = (canvas, e) => {
-    console.log('engaged');
     this.setState({ dragging: true, focus: true });
     
     // A point is drawn
@@ -42,7 +41,6 @@ class CanvasCntr extends Component {
   }
 
   disengage = (canvas) => {
-    console.log('disengaged');
     this.setState({ dragging: false, focus: false });
 
     // The path is reset, so the paths aren't connected
@@ -56,13 +54,11 @@ class CanvasCntr extends Component {
     const tool = brush.selected ? brush : eraser;
 
     // The location of the point is the mouse' position
-    const { x, y } = this.mousePosition(canvas, e);
+    const { x, y } = this.canvasMousePosition(canvas, e);
 
     const context = canvas.getContext('2d');
 
     if ( dragging || fire ) {
-      console.log('putPoint');
-
       context.lineWidth = tool.radius * 2;
       context.lineCap = 'round';
 
@@ -85,16 +81,26 @@ class CanvasCntr extends Component {
 
       // Beginning of the line path
       context.moveTo(x, y);
+
+      // The mouse position is set (for the brush and eraser)
+      this.setState({ mouse: { x: e.clientX, y: e.clientY } });
     }
   }
 
-  mousePosition = (canvas, e) => {
+  canvasMousePosition = (canvas, e) => {
     // Subtracting the canvas offset from the event coordinates get the coordinates relative to the canvas, which is needed for the mouse position outside of the canvas.
     // Adding the window offset gets the coordinates relative to the canvas when the window page is scrolled.
     return {
       x: e.clientX - canvas.offsetLeft + window.pageXOffset,
       y: e.clientY - canvas.offsetTop + window.pageYOffset
     };
+  }
+
+  mousePosition = (canvas, e) => {
+    console.log('Mouse Position',{ x: e.clientX, y: e.clientY });
+    this.setState({
+      mouse: { x: e.clientX, y: e.clientY }
+    });
   }
 
   render() {
@@ -104,7 +110,9 @@ class CanvasCntr extends Component {
         initCanvas={ this.initCanvas }
         engage={ this.engage }
         putPoint={ this.putPoint }
-        disengage={ this.disengage } />
+        disengage={ this.disengage }
+        mouse={ this.state.mouse }
+        mousePosition={ this.mousePosition } />
     );
   }
 }
