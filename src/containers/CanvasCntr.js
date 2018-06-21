@@ -5,10 +5,6 @@ class CanvasCntr extends Component {
   constructor () {
     super();
     this.state = {
-      mouse: {
-        x: 0,
-        y: 0
-      },
       brush: {
         radius: 10,
         color: '#000000',
@@ -19,18 +15,11 @@ class CanvasCntr extends Component {
         color: '#ffffff',
         selected: false
       },
+      mouse: { x: 0, y: 0 },
+      inCanvas: false,
       dragging: false,
       focus: false
     }
-  }
-
-  initCanvas = (canvas) => {
-    // Context of the canvas
-    const context = canvas.getContext('2d');
-
-    // The intial color of the canvas
-    context.fillStyle = '#f0f0f0';
-    context.fillRect(0, 0, canvas.width, canvas.height);
   }
 
   engage = (canvas, e) => {
@@ -41,14 +30,14 @@ class CanvasCntr extends Component {
   }
 
   disengage = (canvas) => {
-    this.setState({ dragging: false, focus: false });
+    this.setState({ inCanvas: false, dragging: false, focus: false });
 
     // The path is reset, so the paths aren't connected
     canvas.getContext('2d').beginPath();
   }
 
   putPoint = (canvas, e, fire) => {
-    const { mouse, brush, eraser, dragging } = this.state;
+    const { brush, eraser, dragging } = this.state;
 
     // The selected tool (brush or eraser)
     const tool = brush.selected ? brush : eraser;
@@ -82,8 +71,8 @@ class CanvasCntr extends Component {
       // Beginning of the line path
       context.moveTo(x, y);
 
-      // The mouse position is set (for the brush and eraser)
-      this.setState({ mouse: { x: e.clientX, y: e.clientY } });
+      // The mouse position is set
+      this.mousePosition(canvas, e);
     }
   }
 
@@ -97,22 +86,27 @@ class CanvasCntr extends Component {
   }
 
   mousePosition = (canvas, e) => {
-    console.log('Mouse Position',{ x: e.clientX, y: e.clientY });
-    this.setState({
-      mouse: { x: e.clientX, y: e.clientY }
+    this.setState({ 
+      mouse: { x: e.clientX, y: e.clientY },
+      inCanvas: true 
     });
+  }
+
+  mouseOut = () => {
+    this.setState({ inCanvas: false });
   }
 
   render() {
     return (
       <Canvas
+        mouse={ this.state.mouse }
         focus={ this.state.focus }
-        initCanvas={ this.initCanvas }
+        inCanvas={ this.state.inCanvas }
         engage={ this.engage }
         putPoint={ this.putPoint }
         disengage={ this.disengage }
-        mouse={ this.state.mouse }
-        mousePosition={ this.mousePosition } />
+        mousePosition={ this.mousePosition }
+        mouseOut={ this.mouseOut } />
     );
   }
 }

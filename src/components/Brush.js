@@ -2,9 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 function Brush (props) {
-   const { radius, mouse } = props;
+   const { mouse, radius, zIndex } = props;
 
-   // 
    const stroke = '#000000';
    const strokeWidth = 1;
    const fill = 'transparent';
@@ -20,23 +19,25 @@ function Brush (props) {
 
    // styles
    const styles = {
-      svg: {
+      brush: {
          position: 'fixed',
          top: pos.y,
          left: pos.x,
+         zIndex: zIndex
       }
    }
 
    return (
-      <svg width={ width } height={ height } style={ styles.svg }>
+      <svg id="brush" width={ width } height={ height } style={ styles.brush }>
          <circle cx={ cx } cy={ cy } r={ r } stroke={ stroke } strokeWidth={ strokeWidth } fill={ fill } />
       </svg>
    );
 }
 
 Brush.propTypes = {
+   mouse: PropTypes.object.isRequired,
    radius: PropTypes.number.isRequired,
-   mouse: PropTypes.object.isRequired
+   zIndex: PropTypes.number.isRequired,
 }
 
 export default Brush;
