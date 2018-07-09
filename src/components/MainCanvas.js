@@ -2,15 +2,16 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Brush from './Brush';
 
-class Canvas extends Component {
+class MainCanvas extends Component {
    
   componentDidMount () {
-    // canvas
+    this.initCanvas();
+  }
+
+  initCanvas = () => {
     const canvas = this.refs.canvas;
     const context = canvas.getContext('2d');
-
-    // The intial color of the canvas
-    context.fillStyle = '#f0f0f0';
+    context.fillStyle = '#f0f0f0';  // The intial color of the canvas
     context.fillRect(0, 0, canvas.width, canvas.height);
   }
 
@@ -23,16 +24,22 @@ class Canvas extends Component {
       putPoint,
       disengage,
       mousePosition,
-      mouseOut
+      mouseLeave
     } = this.props;
-
+    
     // canvas size
     const width = 400;
     const height = 400;
 
     // styles
-    const styles = {
-      focusOverlay: {
+    const style = {
+      mainCanvasDiv: {
+        width: width,
+        height: height,
+        margin: '0 auto',
+        outline: '2px solid grey'
+      },
+      focusLayer: {
         position: 'fixed',
         top: 0,
         left: 0,
@@ -44,48 +51,43 @@ class Canvas extends Component {
       },
       drawLayer: {
         position: 'absolute',
-        top: 0,
-        left: 0,
         zIndex: 1,
         width: width, 
         height: height,
         background: 'rgba(255,180,180,0.3)'
       },
       canvas: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        zIndex: 0,
+        zIndex: 0
       }
     }
 
     return (
-      <div className="main-canvas">
+      <div ref="mainCanvas" className="main-canvas" style={ style.mainCanvasDiv }>
 
         { (inCanvas || focus) &&
         <Brush mouse={ mouse } radius={ 10 } zIndex={ 1 } /> }
 
         { focus && 
-        <div className="focus-overlay" style={ styles.focusOverlay }
+        <div className="focus-layer" style={ style.focusLayer }
           onMouseMove={(e) => putPoint(this.refs.canvas, e)}
           onMouseUp={() => disengage(this.refs.canvas)}
           onMouseLeave={() => disengage(this.refs.canvas)}>
         </div> }
 
-        <div className="draw-layer" style={ styles.drawLayer }
+        <div ref="drawLayer" className="draw-layer" style={ style.drawLayer }
           onMouseDown={(e) => engage(this.refs.canvas, e)}
-          onMouseMove={(e) => mousePosition(this.refs.canvas, e)}
-          onMouseLeave={() => mouseOut() }>
+          onMouseMove={(e) => mousePosition(e)}
+          onMouseLeave={() => mouseLeave()}>
         </div>
 
-        <canvas ref="canvas" style={ styles.canvas } width={ width } height={ height }/>
+        <canvas ref="canvas" style={ style.canvas } width={ width } height={ height }/>
 
       </div>
     );
   }
 }
 
-Canvas.propTypes = {
+MainCanvas.propTypes = {
   mouse: PropTypes.object.isRequired,
   focus: PropTypes.bool.isRequired,
   inCanvas: PropTypes.bool.isRequired,
@@ -93,7 +95,7 @@ Canvas.propTypes = {
   putPoint: PropTypes.func.isRequired,
   disengage: PropTypes.func.isRequired,
   mousePosition: PropTypes.func.isRequired,
-  mouseOut: PropTypes.func.isRequired
+  mouseLeave: PropTypes.func.isRequired
 };
 
-export default Canvas;
+export default MainCanvas;

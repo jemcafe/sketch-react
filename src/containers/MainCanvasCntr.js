@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import Canvas from '../components/Canvas';
+import MainCanvas from '../components/MainCanvas';
 
-class CanvasCntr extends Component {
+class MainCanvasCntr extends Component {
   constructor () {
     super();
     this.state = {
@@ -10,42 +10,28 @@ class CanvasCntr extends Component {
         color: '#000000',
         selected: true
       },
-      eraser: {
-        radius: 5,
-        color: '#ffffff',
-        selected: false
-      },
       mouse: { x: 0, y: 0 },
       inCanvas: false,
       dragging: false,
-      focus: false
+      focus: false,
     }
   }
 
   engage = (canvas, e) => {
     this.setState({ dragging: true, focus: true });
-    
-    // A point is drawn
-    this.putPoint(canvas, e, true);
+    this.putPoint(canvas, e, true);  // A point is drawn
   }
 
   disengage = (canvas) => {
     this.setState({ inCanvas: false, dragging: false, focus: false });
-
-    // The path is reset, so the paths aren't connected
-    canvas.getContext('2d').beginPath();
+    canvas.getContext('2d').beginPath();  // The path is reset, so the paths aren't connected
   }
 
   putPoint = (canvas, e, fire) => {
-    const { brush, eraser, dragging } = this.state;
-
-    // The selected tool (brush or eraser)
-    const tool = brush.selected ? brush : eraser;
-
-    // The location of the point is the mouse' position
-    const { x, y } = this.canvasMousePosition(canvas, e);
-
     const context = canvas.getContext('2d');
+    const { brush, eraser, dragging } = this.state;
+    const tool = brush.selected ? brush : eraser;         // The selected tool (brush or eraser)
+    const { x, y } = this.canvasMousePosition(canvas, e); // The location of the point is the mouse' position
 
     if ( dragging || fire ) {
       context.lineWidth = tool.radius * 2;
@@ -72,33 +58,29 @@ class CanvasCntr extends Component {
       context.moveTo(x, y);
 
       // The mouse position is set
-      this.mousePosition(canvas, e);
+      this.mousePosition(e);
     }
   }
 
-  canvasMousePosition = (canvas, e) => {
-    // Subtracting the canvas offset from the event coordinates get the coordinates relative to the canvas, which is needed for the mouse position outside of the canvas.
-    // Adding the window offset gets the coordinates relative to the canvas when the window page is scrolled.
-    return {
-      x: e.clientX - canvas.offsetLeft + window.pageXOffset,
-      y: e.clientY - canvas.offsetTop + window.pageYOffset
-    };
-  }
+  canvasMousePosition = (canvas, e) => ({
+    x: e.clientX - canvas.offsetLeft + window.pageXOffset,
+    y: e.clientY - canvas.offsetTop + window.pageYOffset
+  })
 
-  mousePosition = (canvas, e) => {
+  mousePosition = (e) => {
     this.setState({ 
-      mouse: { x: e.clientX, y: e.clientY },
+      mouse: { x: e.clientX, y: e.clientY }, 
       inCanvas: true 
     });
   }
 
-  mouseOut = () => {
+  mouseLeave = () => {
     this.setState({ inCanvas: false });
   }
 
   render() {
     return (
-      <Canvas
+      <MainCanvas
         mouse={ this.state.mouse }
         focus={ this.state.focus }
         inCanvas={ this.state.inCanvas }
@@ -106,9 +88,9 @@ class CanvasCntr extends Component {
         putPoint={ this.putPoint }
         disengage={ this.disengage }
         mousePosition={ this.mousePosition }
-        mouseOut={ this.mouseOut } />
+        mouseLeave={ this.mouseLeave } />
     );
   }
 }
 
-export default CanvasCntr;
+export default MainCanvasCntr;

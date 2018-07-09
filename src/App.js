@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import Canvas from './containers/CanvasCntr';
+import MainCanvas from './containers/MainCanvasCntr';
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <Canvas />
+        <MainCanvas />
       </div>
     );
   }
