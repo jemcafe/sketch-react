@@ -39,48 +39,43 @@ class MainCanvas extends Component {
         margin: '0 auto',
         outline: '2px solid grey'
       },
-      focusLayer: {
+      canvas: {
+        zIndex: 0
+      },
+      focus_layer: {
         position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: 2,
         width: '100vw',
         height: '100vh',
         background: '#c0d9ff',
         opacity: 0.4
       },
-      drawLayer: {
+      draw_canvas: {
         position: 'absolute',
-        zIndex: 1,
-        width: width, 
-        height: height,
-        background: 'rgba(255,180,180,0.3)'
+        background: 'rgba(255,180,180,0.3)',
+        transform: `translate(${-width}px, 0)`
       },
-      canvas: {
-        zIndex: 0
-      }
     }
 
     return (
       <div ref="mainCanvas" className="main-canvas" style={ style.mainCanvasDiv }>
 
-        { (inCanvas || focus) &&
-        <Brush mouse={ mouse } radius={ 10 } zIndex={ 1 } /> }
+        <canvas ref="canvas" style={ style.canvas } width={ width } height={ height }/>
+
+        { (inCanvas || focus) && <Brush mouse={ mouse } radius={ 10 } zIndex={ 0 } /> }
+
+        <canvas className="draw-canvas" style={ style.draw_canvas } width={ width } height={ height }
+          onMouseDown={(e) => engage(this.refs.canvas, e)}
+          onMouseMove={(e) => mousePosition(e)}
+          onMouseLeave={() => mouseLeave()}/>
 
         { focus && 
-        <div className="focus-layer" style={ style.focusLayer }
+        <div className="focus-layer" style={ style.focus_layer }
           onMouseMove={(e) => putPoint(this.refs.canvas, e)}
           onMouseUp={() => disengage(this.refs.canvas)}
           onMouseLeave={() => disengage(this.refs.canvas)}>
         </div> }
-
-        <div ref="drawLayer" className="draw-layer" style={ style.drawLayer }
-          onMouseDown={(e) => engage(this.refs.canvas, e)}
-          onMouseMove={(e) => mousePosition(e)}
-          onMouseLeave={() => mouseLeave()}>
-        </div>
-
-        <canvas ref="canvas" style={ style.canvas } width={ width } height={ height }/>
 
       </div>
     );

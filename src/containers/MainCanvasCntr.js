@@ -14,6 +14,7 @@ class MainCanvasCntr extends Component {
       inCanvas: false,
       dragging: false,
       focus: false,
+      bpts: []
     }
   }
 
@@ -23,43 +24,111 @@ class MainCanvasCntr extends Component {
   }
 
   disengage = (canvas) => {
-    this.setState({ inCanvas: false, dragging: false, focus: false });
+    this.setState({ inCanvas: false, dragging: false, focus: false, bpts: [] });
     canvas.getContext('2d').beginPath();  // The path is reset, so the paths aren't connected
   }
 
+  // putPoint = (canvas, e, fire) => {
+  //   const context = canvas.getContext('2d');
+  //   const { brush, dragging } = this.state;
+  //   const tool = brush;         // The selected tool (brush or eraser)
+  //   const { x, y } = this.canvasMousePosition(canvas, e); // The location of the point is the mouse' position
+  //   const last_mouse = { 
+  //     x: this.state.mouse.x - canvas.offsetLeft + window.pageXOffset, 
+  //     y: this.state.mouse.y - canvas.offsetTop + window.pageYOffset
+  //   };
+
+  //   if ( dragging || fire ) {
+  //     context.lineWidth = tool.radius * 2;
+  //     context.lineCap = 'round';
+  //     context.lineJoin = 'round';
+  //     context.strokeStyle = tool.color;
+  //     context.fillStyle = tool.color;
+
+  //     // End of the line path
+  //     context.lineTo(x, y);
+
+  //     // The stroke method draws the path defined by lineTo and moveTo
+  //     context.stroke();
+      
+  //     // A circle is created using the arc method. The start and end angles make the arc a circle. 2*PI is one cycle around a circle in radians. 
+  //     context.arc(x, y, tool.radius, 0, 2 * Math.PI);  // context.arc(x, y, radius, startAngle, endAngle, [antiClockwise]);
+
+  //     // Fills the circle with a color (without fillStyle the color is black by default)
+  //     context.fill();
+
+  //     // The path is reset
+  //     context.beginPath();
+
+  //     // Beginning of the line path
+  //     context.moveTo(x, y);
+
+  //     // The mouse position is set
+  //     this.mousePosition(e);
+  //   }
+  // }
+
   putPoint = (canvas, e, fire) => {
     const context = canvas.getContext('2d');
-    const { brush, eraser, dragging } = this.state;
-    const tool = brush.selected ? brush : eraser;         // The selected tool (brush or eraser)
-    const { x, y } = this.canvasMousePosition(canvas, e); // The location of the point is the mouse' position
+    const { brush, dragging, bpts } = this.state;
+    const tool = brush;         // The selected tool (brush or eraser)
+    const mouse = this.canvasMousePosition(canvas, e); // The location of the point is the mouse' position
 
     if ( dragging || fire ) {
       context.lineWidth = tool.radius * 2;
       context.lineCap = 'round';
-
-      // End of the line path
-      context.lineTo(x, y);
-
-      // The stroke method draws the path defined by lineTo and moveTo
+      context.lineJoin = 'round';
       context.strokeStyle = tool.color;
-      context.stroke();
-      
-      // A circle is created using the arc method. The start and end angles make the arc a circle. 2*PI is one cycle around a circle in radians. 
-      context.arc(x, y, tool.radius, 0, 2 * Math.PI);  // context.arc(x, y, radius, startAngle, endAngle, [antiClockwise]);
-
-      // Fills the circle with a color (without fillStyle the color is black by default)
       context.fillStyle = tool.color;
-      context.fill();
+
+      // // End of the line path
+      // context.lineTo(mouse.x, mouse.y);
+
+      // // The stroke method draws the path defined by lineTo and moveTo
+      // context.stroke();
+      
+      // // A circle is created using the arc method. The start and end angles make the arc a circle. 2*PI is one cycle around a circle in radians. 
+      // context.arc(mouse.x, mouse.y, tool.radius, 0, 2 * Math.PI);  // context.arc(x, y, radius, startAngle, endAngle, [antiClockwise]);
+
+      // // Fills the circle with a color (without fillStyle the color is black by default)
+      // context.fill();
 
       // The path is reset
       context.beginPath();
 
-      // Beginning of the line path
-      context.moveTo(x, y);
+      if ( bpts.length > 2 ) {
+        // Beginning of the line path
+        context.moveTo(bpts[0], bpts[0]);
+
+        for (let i = 1; i < bpts.length - 2; i++) {
+          let c = (bpts[i].x + bpts[i + 1].x) / 2;
+          let d = (bpts[i].y + bpts[i + 1].y) / 2;
+          
+          context.quadraticCurveTo(bpts[i].x, bpts[i].y, c, d);
+        }
+
+        // context.quadraticCurveTo(
+        //   bpts[bpts.length - 2].x,
+        //   bpts[bpts.length - 2].y,
+        //   bpts[bpts.length - 1].x,
+        //   bpts[bpts.length - 1].y
+        // );
+        context.stroke();
+      }
+
+      this.saveBrushPoints(mouse);
 
       // The mouse position is set
       this.mousePosition(e);
     }
+  }
+
+  saveBrushPoints = (mouse) => {
+    this.setState(prev => {
+      const bpts = prev.bpts;
+      bpts.push({ x: mouse.x, y: mouse.y });
+      return { bpts };
+    });
   }
 
   canvasMousePosition = (canvas, e) => ({
@@ -79,6 +148,7 @@ class MainCanvasCntr extends Component {
   }
 
   render() {
+    console.log('bpts', this.state.bpts);
     return (
       <MainCanvas
         mouse={ this.state.mouse }
